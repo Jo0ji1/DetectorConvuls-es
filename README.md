@@ -1,63 +1,145 @@
-# Welcome to your Expo app 👋
+# 🇧🇷 Seizure Detector App
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+Uma aplicação mobile moderna desenvolvida com React Native e Expo Router, focada em proporcionar uma experiência única e intuitiva para usuários brasileiros.
 
-## Get started
+## 📱 Sobre o Projeto
 
-1. Install dependencies
+O **Seizure Detector** é um aplicativo que combina se conecta com um dispositivo com um único objetivo: Detectar Crises Epléticas
 
-   ```bash
-   npm install
-   ```
+-   ✨ Interface moderna com Tailwind CSS (NativeWind)
+-   🔐 Sistema de autenticação seguro
+-   📱 Navegação intuitiva com Expo Router
+-   🎨 Design responsivo e acessível
+-   ⚡ Performance otimizada
 
-2. Start the app
+## 🚀 Tecnologias Utilizadas
 
-   ```bash
-   npx expo start
-   ```
+-   **React Native** 0.79.2
+-   **Expo** ~53.0.9
+-   **Expo Router** ~5.0.6
+-   **TypeScript** ~5.8.3
+-   **NativeWind** ^4.1.23 (Tailwind CSS para React Native)
+-   **Expo Linear Gradient** ~14.1.4
+-   **React Native Reanimated** 3.16.2
+-   **AsyncStorage** para persistência de dados
 
-In the output, you'll find options to open the app in a
+## 📋 Pré-requisitos
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
+Antes de começar, certifique-se de ter as seguintes ferramentas instaladas:
 
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
+-   **Node.js** versão **22.11.0** ou superior
+-   **npm** ou **yarn**
+-   **Expo CLI** (instalado globalmente)
+-   **Android Studio** (para desenvolvimento Android)
+-   **Xcode** (para desenvolvimento iOS - apenas macOS)
 
-## Get a fresh project
-
-When you're ready, run:
+### Verificando a versão do Node.js
 
 ```bash
-npm run reset-project
+node --version
 ```
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+⚠️ **Importante**: Este projeto requer Node.js versão 22.11.0 ou superior para funcionar corretamente.
 
-## Learn more
+## 🛠️ Instalação e Configuração
 
-To learn more about developing your project with Expo, look at the following resources:
-
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
-
-## Join the community
-
-Join our community of developers creating universal apps.
-
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
-
-## Install infos
+### 1. Clone o repositório
 
 ```bash
-- npm run android
-```
-```bash
-- npm run ios # you need to use macOS to build the iOS project - use the Expo app if you need to do iOS development without a Mac
+git clone https://github.com/seu-usuario/SeizureDetectorApp.git
+cd SeizureDetectorApp
 ```
 
+### 2. Instale as dependências
+
 ```bash
-- npm run web
+npm install
+```
+
+ou
+
+```bash
+yarn install
+```
+
+### 3. Instale o Expo CLI globalmente (se ainda não tiver)
+
+```bash
+npm install -g @expo/eas-cli expo-cli
+```
+
+## 🚀 Como Executar o Projeto
+
+### Desenvolvimento
+
+#### Iniciar o servidor de desenvolvimento
+
+```bash
+npx expo start
+```
+
+ou
+
+```bash
+npx expo start --clear 
+```
+
+#### Executar no Android
+
+```bash
+npm run android
+```
+
+#### Executar no iOS
+
+```bash
+npm run ios
+```
+
+#### Executar no Web
+
+```bash
+npm run web
+```
+
+### Executando no Dispositivo Físico
+
+1. Instale o app **Expo Go** no seu dispositivo
+2. Execute `npm start` no terminal
+3. Escaneie o QR Code com o Expo Go (Android) ou com a câmera (iOS)
+
+## 📦 Build para Produção
+
+### EAS Build (Recomendado)
+
+#### Configurar EAS Build
+
+```bash
+eas build:configure
+```
+
+#### Build para Android (APK)
+
+```bash
+eas build --platform android --profile preview
+```
+
+#### Build para Android (AAB - Google Play)
+
+```bash
+eas build --platform android --profile production
+```
+
+#### Build para iOS
+
+```bash
+eas build --platform ios --profile production
+```
+
+## 🧪 Testes
+
+Execute os testes unitários:
+
+```bash
+npm test
 ```
