@@ -23,9 +23,9 @@ export function BrainWaveAnimation({ isActive, size = 200 }: BrainWaveAnimationP
                     const animation = Animated.loop(
                         Animated.timing(animValue, {
                             toValue: 1,
-                            duration: 3000, // Aumentei a duração para mais suavidade
+                            duration: 3000,
                             delay,
-                            easing: Easing.bezier(0.25, 0.46, 0.45, 0.94), // Easing mais suave (ease-out)
+                            easing: Easing.bezier(0.25, 0.46, 0.45, 0.94),
                             useNativeDriver: true,
                         }),
                         { resetBeforeIteration: true },
@@ -54,19 +54,19 @@ export function BrainWaveAnimation({ isActive, size = 200 }: BrainWaveAnimationP
         width: size,
         height: size,
         borderRadius: size / 2,
-        borderWidth: 1.5, // Bordas mais finas para aspecto mais sutil
+        borderWidth: 1.5, 
         borderColor: '#0ea5e9',
         transform: [
             {
                 scale: animValue.interpolate({
                     inputRange: [0, 1],
-                    outputRange: [0.8, scale], // Começar um pouco menor
+                    outputRange: [0.8, scale], 
                 }),
             },
         ],
         opacity: animValue.interpolate({
             inputRange: [0, 0.3, 0.7, 1],
-            outputRange: [0, 0.8, 0.3, 0], // Transição de opacidade mais gradual
+            outputRange: [0, 0.8, 0.3, 0], 
         }),
     });
 

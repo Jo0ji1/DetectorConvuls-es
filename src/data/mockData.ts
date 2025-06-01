@@ -25,11 +25,30 @@ export interface PatientData {
     };
 }
 
+export interface LoginCredentials {
+    email: string;
+    password: string;
+}
+
+// Dados fictícios do usuário
+export const DEFAULT_USER = {
+    id: '001',
+    email: 'usuario@seizuredetector.com',
+    name: 'João Silva',
+    role: 'Usuário',
+};
+
+// Credenciais de login padrão
+export const DEFAULT_CREDENTIALS: LoginCredentials = {
+    email: 'usuario@seizuredetector.com',
+    password: '123456',
+};
+
 // Dados fictícios do dispositivo
 export const mockDevice: DeviceData = {
     id: 'SD_001',
     name: 'Seizure Detector v2.1',
-    status: 'active',
+    status: 'active', // Pode ser 'active', 'inactive', 'connecting', 'connected'
     batteryLevel: 87,
     signalStrength: 95,
     lastActivity: '2024-01-15T10:30:00Z',
@@ -38,10 +57,10 @@ export const mockDevice: DeviceData = {
 // Dados fictícios do paciente
 export const mockPatient: PatientData = {
     id: 'P001',
-    name: 'João Silva',
+    name: 'Maria Santos',
     age: 28,
     emergencyContact: {
-        name: 'Maria Silva',
+        name: 'Carlos Santos',
         phone: '+55 11 99999-9999',
     },
 };
@@ -78,4 +97,9 @@ export const updateDeviceStatus = (newStatus: DeviceData['status']): DeviceData 
         status: newStatus,
         lastActivity: new Date().toISOString(),
     };
+};
+
+// Função para validar credenciais de login
+export const validateLogin = (email: string, password: string): boolean => {
+    return email === DEFAULT_CREDENTIALS.email && password === DEFAULT_CREDENTIALS.password;
 };

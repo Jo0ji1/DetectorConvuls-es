@@ -1,28 +1,23 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { DEFAULT_USER, validateLogin } from '../data/mockData';
 
 interface User {
     id: string;
     email: string;
     name: string;
+    role?: string;
 }
 
 interface AuthContextType {
     user: User | null;
     isLoading: boolean;
-    login: () => Promise<boolean>;
+    login: (email: string, password: string) => Promise<boolean>;
     logout: () => Promise<void>;
     isAuthenticated: boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
-
-// Usuário padrão para o sistema de detecção de crises
-const DEFAULT_USER = {
-    id: 'U001',
-    email: 'usuario@seizuredetector.com',
-    name: 'Usuário do Sistema',
-};
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
     const [user, setUser] = useState<User | null>(null);
@@ -46,18 +41,26 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         }
     };
 
-    const login = async (): Promise<boolean> => {
+    const login = async (email: string, password: string): Promise<boolean> => {
         try {
             setIsLoading(true);
 
-            // Login automático após conexão bem-sucedida
-            const userData = DEFAULT_USER;
+            // Simular delay de requisição
+            await new Promise((resolve) => setTimeout(resolve, 1500));
 
-            // Salvar dados do usuário
-            await AsyncStorage.setItem('@seizure_detector:user', JSON.stringify(userData));
-            setUser(userData);
+            // Validar credenciais
+            const isValid = validateLogin(email, password);
 
-            return true;
+            if (isValid) {
+                const userData = DEFAULT_USER;
+
+                // Salvar dados do usuário
+                await AsyncStorage.setItem('@seizure_detector:user', JSON.stringify(userData));
+                setUser(userData);
+                return true;
+            }
+
+            return false;
         } catch (error) {
             console.error('Erro no login:', error);
             return false;

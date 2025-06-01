@@ -2,24 +2,15 @@ import { useEffect } from 'react';
 import { Slot, useRouter } from 'expo-router';
 import { View, ActivityIndicator } from 'react-native';
 import { useAuth } from '../../contexts/AuthContext';
-import { useDevice } from '../../contexts/DeviceContext';
 import '@/global.css';
 
 export default function ProtectedLayout() {
-    const { isAuthenticated, isLoading, login } = useAuth();
-    const { isConnected } = useDevice();
+    const { isAuthenticated, isLoading } = useAuth();
     const router = useRouter();
 
     useEffect(() => {
-        if (isConnected && !isAuthenticated && !isLoading) {
-            // Login automático quando dispositivo conecta
-            login();
-        }
-    }, [isConnected, isAuthenticated, isLoading]);
-
-    useEffect(() => {
         if (!isLoading && !isAuthenticated) {
-            // Redirecionar para conexão do dispositivo se não estiver autenticado
+            // Redirecionar para login se não estiver autenticado
             router.replace('/');
         }
     }, [isAuthenticated, isLoading]);
