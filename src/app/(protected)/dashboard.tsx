@@ -6,6 +6,7 @@ import { useDevice } from '../../contexts/DeviceContext';
 import { router } from 'expo-router';
 import HomeTab from '../../components/tabs/HomeTab';
 import HistoryTab from '../../components/tabs/HistoryTab';
+import SettingsTab from '../../components/tabs/SettingsTab';
 import '../../../global.css';
 
 export default function DashboardScreen() {
@@ -38,11 +39,7 @@ export default function DashboardScreen() {
             case 'history':
                 return <HistoryTab />;
             case 'settings':
-                return (
-                    <View className="flex-1 justify-center items-center bg-gray-50">
-                        <Text className="text-gray-600">Configurações - Em desenvolvimento</Text>
-                    </View>
-                );
+                return <SettingsTab onLogout={handleLogout} />;
             default:
                 return null;
         }

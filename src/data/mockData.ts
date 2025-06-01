@@ -49,6 +49,34 @@ export interface HistoryStats {
     lastWeekTrend: 'improving' | 'stable' | 'declining';
 }
 
+// Interface para contatos de emergência
+export interface EmergencyContact {
+    id: string;
+    name: string;
+    phone: string;
+    relationship: string;
+    isPrimary: boolean;
+}
+
+// Interface para configurações do usuário
+export interface UserSettings {
+    notifications: {
+        pushEnabled: boolean;
+        emailEnabled: boolean;
+        smsEnabled: boolean;
+        emergencyAlerts: boolean;
+    };
+    privacy: {
+        shareData: boolean;
+        analytics: boolean;
+    };
+    device: {
+        autoSync: boolean;
+        batteryAlerts: boolean;
+        connectionAlerts: boolean;
+    };
+}
+
 // Dados fictícios do usuário
 export const DEFAULT_USER = {
     id: '001',
@@ -82,6 +110,50 @@ export const mockPatient: PatientData = {
     emergencyContact: {
         name: 'Carlos Santos',
         phone: '+55 11 99999-9999',
+    },
+};
+
+// Contatos de emergência fictícios
+export const mockEmergencyContacts: EmergencyContact[] = [
+    {
+        id: 'EC001',
+        name: 'Carlos Santos',
+        phone: '+55 11 99999-9999',
+        relationship: 'Cônjuge',
+        isPrimary: true,
+    },
+    {
+        id: 'EC002',
+        name: 'Maria Silva',
+        phone: '+55 11 88888-8888',
+        relationship: 'Mãe',
+        isPrimary: false,
+    },
+    {
+        id: 'EC003',
+        name: 'Dr. Roberto',
+        phone: '+55 11 77777-7777',
+        relationship: 'Médico',
+        isPrimary: false,
+    },
+];
+
+// Configurações do usuário fictícias
+export const mockUserSettings: UserSettings = {
+    notifications: {
+        pushEnabled: true,
+        emailEnabled: true,
+        smsEnabled: false,
+        emergencyAlerts: true,
+    },
+    privacy: {
+        shareData: false,
+        analytics: true,
+    },
+    device: {
+        autoSync: true,
+        batteryAlerts: true,
+        connectionAlerts: true,
     },
 };
 

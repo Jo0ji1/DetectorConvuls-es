@@ -89,10 +89,9 @@ export default function HomeTab({ onLogout }: HomeTabProps) {
         return `${days}d ${remainingHours.toFixed(0)}h`;
     };
 
-    const getBatteryIcon = (level: number) => {
-        if (level > 75) return 'battery-full';
-        if (level > 50) return 'battery-half';
-        if (level > 25) return 'battery-low';
+    const getBatteryIcon = (level: number): 'battery-full' | 'battery-half' | 'battery-dead' => {
+        if (level > 50) return 'battery-full';
+        if (level > 25) return 'battery-half';
         return 'battery-dead';
     };
 
