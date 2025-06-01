@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, ScrollView, Vibration, Alert } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useDevice } from '../../contexts/DeviceContext';
-import { mockPatient, mockSeizureEvents, mockHomeData } from '../../data/mockData';
+import { mockPatient, mockSeizureEvents, mockHomeData, getEmergencyContactsForDisplay } from '../../data/mockData';
 import { BrainWaveAnimation } from '../ui/BrainWaveAnimation';
 
 interface HomeTabProps {
@@ -95,6 +95,7 @@ export default function HomeTab({ onLogout }: HomeTabProps) {
         return 'battery-dead';
     };
 
+    const emergencyContacts = getEmergencyContactsForDisplay();
     const lastSeizure = getLastSeizure();
 
     return (
@@ -250,7 +251,9 @@ export default function HomeTab({ onLogout }: HomeTabProps) {
                                 <Ionicons name="person-circle" size={20} color="#3b82f6" />
                                 <View className="ml-3 flex-1">
                                     <Text className="text-blue-600 font-medium">Contato de Emergência</Text>
-                                    <Text className="text-blue-400 text-xs">{mockPatient.emergencyContact.name}</Text>
+                                    <Text className="text-blue-400 text-xs">
+                                        {emergencyContacts[0]?.name || 'Não configurado'}
+                                    </Text>
                                 </View>
                             </View>
                         </TouchableOpacity>

@@ -31,7 +31,6 @@ export interface LoginCredentials {
     password: string;
 }
 
-// Nova interface para dados históricos
 export interface SleepQualityEvent {
     id: string;
     date: string;
@@ -49,7 +48,6 @@ export interface HistoryStats {
     lastWeekTrend: 'improving' | 'stable' | 'declining';
 }
 
-// Interface para contatos de emergência
 export interface EmergencyContact {
     id: string;
     name: string;
@@ -58,7 +56,6 @@ export interface EmergencyContact {
     isPrimary: boolean;
 }
 
-// Interface para configurações do usuário
 export interface UserSettings {
     notifications: {
         pushEnabled: boolean;
@@ -77,12 +74,15 @@ export interface UserSettings {
     };
 }
 
-// Dados fictícios do usuário
+// ===== DADOS CENTRALIZADOS =====
+
+// Dados do usuário centralizados
 export const DEFAULT_USER = {
     id: '001',
     email: 'usuario@seizuredetector.com',
     name: 'João Silva',
     role: 'Usuário',
+    age: 28,
 };
 
 // Credenciais de login padrão
@@ -91,29 +91,7 @@ export const DEFAULT_CREDENTIALS: LoginCredentials = {
     password: '123456',
 };
 
-// Dados fictícios do dispositivo
-export const mockDevice: DeviceData = {
-    id: 'SD_001',
-    name: 'Seizure Detector v2.1',
-    status: 'active',
-    batteryLevel: 87,
-    signalStrength: 95,
-    lastActivity: '2024-01-15T10:30:00Z',
-    operationTime: 23.5, // 23.5 horas em operação
-};
-
-// Dados fictícios do paciente
-export const mockPatient: PatientData = {
-    id: 'P001',
-    name: DEFAULT_USER.name,
-    age: 28,
-    emergencyContact: {
-        name: 'Carlos Santos',
-        phone: '+55 11 99999-9999',
-    },
-};
-
-// Contatos de emergência fictícios
+// Contatos de emergência centralizados (fonte única da verdade)
 export const mockEmergencyContacts: EmergencyContact[] = [
     {
         id: 'EC001',
@@ -138,7 +116,18 @@ export const mockEmergencyContacts: EmergencyContact[] = [
     },
 ];
 
-// Configurações do usuário fictícias
+// Dados do dispositivo centralizados
+export const mockDevice: DeviceData = {
+    id: 'SD_001',
+    name: 'Seizure Detector v2.1',
+    status: 'active',
+    batteryLevel: 87,
+    signalStrength: 95,
+    lastActivity: '2024-01-15T10:30:00Z',
+    operationTime: 23.5,
+};
+
+// Configurações do usuário
 export const mockUserSettings: UserSettings = {
     notifications: {
         pushEnabled: true,
@@ -280,31 +269,60 @@ export const mockSleepHistory: SleepQualityEvent[] = [
 export const mockHistoryStats: HistoryStats = {
     totalNights: 30,
     crisisNights: 3,
-    averageSleepQuality: 3.2, // escala de 1-5
+    averageSleepQuality: 3.2,
     lastWeekTrend: 'improving',
 };
 
-// Dados adicionais para Home
+// ===== DADOS DERIVADOS (usando as fontes centralizadas) =====
+
+// Dados do paciente usando referências centralizadas
+export const mockPatient: PatientData = {
+    id: 'P001',
+    name: DEFAULT_USER.name,
+    age: DEFAULT_USER.age,
+    emergencyContact: {
+        name: mockEmergencyContacts.find((contact) => contact.isPrimary)?.name || 'Não configurado',
+        phone: mockEmergencyContacts.find((contact) => contact.isPrimary)?.phone || 'Não configurado',
+    },
+};
+
+// Dados simplificados para Home (usando fontes centralizadas)
 export const mockHomeData = {
     deviceStats: {
-        totalDetections: 12,
-        lastSyncTime: '2024-01-15T10:30:00Z',
+        totalDetections: mockSeizureEvents.length,
+        lastSyncTime: mockDevice.lastActivity,
         uptime: '98.5%',
     },
-    emergencyContacts: [
+};
+
+// ===== FUNÇÕES UTILITÁRIAS =====
+
+// Obter contato primário de emergência
+export const getPrimaryEmergencyContact = (): EmergencyContact | null => {
+    return mockEmergencyContacts.find((contact) => contact.isPrimary) || null;
+};
+
+// Obter contatos para exibição na Home (primário + emergência)
+export const getEmergencyContactsForDisplay = () => {
+    const primary = getPrimaryEmergencyContact();
+    return [
+        ...(primary
+            ? [
+                  {
+                      id: primary.id,
+                      name: primary.name,
+                      phone: primary.phone,
+                      relationship: primary.relationship,
+                  },
+              ]
+            : []),
         {
-            id: '1',
-            name: 'Carlos Santos',
-            phone: '+55 11 99999-9999',
-            relationship: 'Cônjuge',
-        },
-        {
-            id: '2',
+            id: 'emergency',
             name: 'SAMU',
             phone: '192',
             relationship: 'Emergência',
         },
-    ],
+    ];
 };
 
 // Função para simular mudança de status do dispositivo
