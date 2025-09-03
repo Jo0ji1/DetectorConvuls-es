@@ -75,7 +75,6 @@ class ESP32Service {
         try {
             const response = await fetch('http://seizure-detector.local/descoberta', {
                 method: 'GET',
-                timeout: this.DISCOVERY_TIMEOUT,
                 headers: { 'Content-Type': 'application/json' }
             });
 
@@ -144,7 +143,6 @@ class ESP32Service {
 
             const response = await fetch(`http://${device.ip}/ping`, {
                 method: 'GET',
-                timeout: this.CONNECTION_TIMEOUT,
                 headers: { 'Content-Type': 'application/json' }
             });
 
@@ -166,7 +164,6 @@ class ESP32Service {
         try {
             const response = await fetch(`http://${ip}/status`, {
                 method: 'GET',
-                timeout: this.CONNECTION_TIMEOUT,
                 headers: { 'Content-Type': 'application/json' }
             });
 
@@ -187,7 +184,6 @@ class ESP32Service {
         try {
             const response = await fetch(`http://${ip}/controle`, {
                 method: 'POST',
-                timeout: this.CONNECTION_TIMEOUT,
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(commands)
             });
@@ -204,7 +200,6 @@ class ESP32Service {
         try {
             const response = await fetch(`http://${ip}/ping`, {
                 method: 'GET',
-                timeout: 2000, // timeout curto para ping
                 headers: { 'Content-Type': 'application/json' }
             });
 
