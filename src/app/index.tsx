@@ -2,262 +2,356 @@ import React, { useState, useEffect } from 'react';
 import {
     View,
     Text,
-    TextInput,
     TouchableOpacity,
     Alert,
     Image,
     ActivityIndicator,
-    KeyboardAvoidingView,
-    Platform,
     ScrollView,
+    RefreshControl,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
-import { useAuth } from '../contexts/AuthContext';
+import { useDevice } from '../contexts/DeviceContext';
 import { router } from 'expo-router';
-import { PulseAnimation } from '../components/ui/PulseAnimation';
-import { DEFAULT_CREDENTIALS } from '../data/mockData';
+import { BrainWaveAnimation } from '../components/ui/BrainWaveAnimation';
+import { ESP32Device } from '../services/esp32Service';
 import '@/global.css';
 
-export default function LoginScreen() {
-    const { login, isLoading, isAuthenticated } = useAuth();
-    const [email, setEmail] = useState('');
-    const [password, setPassword] = useState('');
-    const [showPassword, setShowPassword] = useState(false);
-    const [isLoginLoading, setIsLoginLoading] = useState(false);
+export default function DeviceConnectionScreen() {
+    const {
+        device,
+        availableDevices,
+        isScanning,
+        isConnecting,
+        isConnected,
+        connectionError,
+        scanForDevices,
+        connectToDevice,
+        selectedESP32Device,
+    } = useDevice();
 
-    // Redirect se já estiver autenticado
+    const [showWaves, setShowWaves] = useState(false);
+    const [selectedDevice, setSelectedDevice] = useState<ESP32Device | null>(null);
+
     useEffect(() => {
-        if (isAuthenticated) {
-            router.replace('/(protected)/device-connection');
+        // Iniciar animação das ondas após 500ms
+        const timer = setTimeout(() => setShowWaves(true), 500);
+        return () => clearTimeout(timer);
+    }, []);
+
+    useEffect(() => {
+        if (isConnected) {
+            // Aguardar um pouco para mostrar o sucesso antes de navegar
+            const timer = setTimeout(() => {
+                router.replace('/dashboard');
+            }, 2000);
+            return () => clearTimeout(timer);
         }
-    }, [isAuthenticated]);
+    }, [isConnected]);
 
-    const handleLogin = async () => {
-        if (!email.trim() || !password.trim()) {
-            Alert.alert('Erro', 'Por favor, preencha todos os campos.');
-            return;
+    // Auto-selecionar primeiro dispositivo disponível
+    useEffect(() => {
+        if (availableDevices.length > 0 && !selectedDevice) {
+            setSelectedDevice(availableDevices[0]);
         }
+    }, [availableDevices]);
 
-        setIsLoginLoading(true);
+    const handleConnect = async () => {
+        if (selectedDevice) {
+            const success = await connectToDevice(selectedDevice);
 
-        try {
-            const success = await login(email, password);
-
-            if (success) {
-                router.replace('/(protected)/device-connection');
+            if (!success) {
+                Alert.alert(
+                    'Falha na Conexão',
+                    connectionError ||
+                        'Não foi possível conectar ao dispositivo. Verifique se o dispositivo está ligado e na mesma rede WiFi.',
+                    [{ text: 'Tentar Novamente', onPress: () => scanForDevices() }, { text: 'OK' }],
+                );
+            }
+        } else {
+            // Tentar escanear e conectar automaticamente
+            await scanForDevices();
+            if (availableDevices.length > 0) {
+                await connectToDevice(availableDevices[0]);
             } else {
                 Alert.alert(
-                    'Erro de Autenticação',
-                    'Email ou senha incorretos. Verifique suas credenciais e tente novamente.',
+                    'Nenhum Dispositivo Encontrado',
+                    'Certifique-se de que:\n• O dispositivo ESP32 está ligado\n• Está conectado à mesma rede WiFi\n• O dispositivo está próximo',
                     [{ text: 'OK' }],
                 );
             }
-        } catch (error) {
-            Alert.alert('Erro', 'Ocorreu um erro durante o login. Tente novamente.');
-        } finally {
-            setIsLoginLoading(false);
         }
     };
 
-    const handleForgotPassword = () => {
-        Alert.alert('Funcionalidade em Desenvolvimento', 'A recuperação de senha estará disponível em breve.', [
-            { text: 'OK' },
-        ]);
+    const handleScan = async () => {
+        await scanForDevices();
     };
 
-    const handleSignUp = () => {
-        Alert.alert('Funcionalidade em Desenvolvimento', 'O cadastro de novos usuários estará disponível em breve.', [
-            { text: 'OK' },
-        ]);
+    const getStatusColor = () => {
+        if (isConnected) return '#10b981'; // verde
+        if (isConnecting) return '#f59e0b'; // amarelo
+        if (selectedDevice) return '#3b82f6'; // azul
+        return '#ef4444'; // vermelho
     };
 
-    const fillDemoCredentials = () => {
-        setEmail(DEFAULT_CREDENTIALS.email);
-        setPassword(DEFAULT_CREDENTIALS.password);
+    const getStatusText = () => {
+        if (isConnected) return 'Conectado';
+        if (isConnecting) return 'Conectando...';
+        if (isScanning) return 'Escaneando...';
+        if (selectedDevice) return 'Disponível';
+        if (connectionError) return 'Erro de Conexão';
+        return 'Nenhum dispositivo';
     };
 
-    if (isLoading) {
+    const renderDeviceList = () => {
+        if (availableDevices.length === 0) {
+            return null;
+        }
+
         return (
-            <View className="flex-1 justify-center items-center bg-gray-900">
-                <ActivityIndicator size="large" color="#3b82f6" />
+            <View className="w-full max-w-sm mb-6">
+                <Text className="text-white text-lg font-semibold mb-3 text-center">
+                    Dispositivos Encontrados ({availableDevices.length})
+                </Text>
+                {availableDevices.map((esp32Device, index) => (
+                    <TouchableOpacity
+                        key={`${esp32Device.ip}-${index}`}
+                        className={`bg-gray-800/50 rounded-xl p-4 mb-2 border-2 ${
+                            selectedDevice?.ip === esp32Device.ip ? 'border-blue-500' : 'border-transparent'
+                        }`}
+                        onPress={() => setSelectedDevice(esp32Device)}
+                    >
+                        <View className="flex-row justify-between items-center">
+                            <View className="flex-1">
+                                <Text className="text-white font-medium">{esp32Device.nome}</Text>
+                                <Text className="text-gray-300 text-sm">{esp32Device.device}</Text>
+                                <Text className="text-gray-400 text-xs">IP: {esp32Device.ip}</Text>
+                                {esp32Device.mdns && (
+                                    <Text className="text-blue-400 text-xs">mDNS: {esp32Device.mdns}</Text>
+                                )}
+                            </View>
+                            <View className="items-center">
+                                <View
+                                    className="w-3 h-3 rounded-full"
+                                    style={{ backgroundColor: esp32Device.online ? '#10b981' : '#ef4444' }}
+                                />
+                                <Text className="text-gray-300 text-xs mt-1">v{esp32Device.versao}</Text>
+                            </View>
+                        </View>
+                    </TouchableOpacity>
+                ))}
             </View>
         );
-    }
+    };
 
     return (
         <View className="flex-1">
-            <LinearGradient colors={['#1e3a8a', '#3b82f6', '#60a5fa']} className="flex-1">
-                <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} className="flex-1">
-                    <ScrollView
-                        contentContainerStyle={{ flexGrow: 1 }}
-                        keyboardShouldPersistTaps="handled"
-                        showsVerticalScrollIndicator={false}
-                    >
-                        <View className="flex-1 justify-center px-6 py-12">
-                            {/* Header com ícones médicos */}
-                            <View className="items-center mb-12">
-                                <View className="relative mb-6">
-                                    <PulseAnimation duration={3000} minScale={0.9} maxScale={1.1}>
-                                        <View className="w-24 h-24 bg-white/20 rounded-full items-center justify-center">
-                                            <Image
-                                                source={require('@/assets/images/brain-wave.png')}
-                                                style={{
-                                                    width: 60,
-                                                    height: 60,
-                                                    tintColor: 'white',
-                                                    resizeMode: 'contain',
-                                                }}
-                                            />
-                                        </View>
-                                    </PulseAnimation>
+            <LinearGradient colors={['#0f172a', '#1e293b', '#334155']} className="flex-1">
+                <ScrollView
+                    className="flex-1"
+                    contentContainerStyle={{ flexGrow: 1 }}
+                    refreshControl={
+                        <RefreshControl
+                            refreshing={isScanning}
+                            onRefresh={handleScan}
+                            colors={['#3b82f6']}
+                            tintColor="#3b82f6"
+                        />
+                    }
+                >
+                    <View className="flex-1 justify-center items-center px-6 py-12">
+                        {/* Header */}
+                        <View className="items-center mb-8">
+                            <Text className="text-white text-3xl font-bold mb-2">Seizure Detector</Text>
+                            <Text className="text-white text-2xl font-bold mb-2">Conectar Dispositivo</Text>
+                            <Text className="text-gray-300 text-base text-center">
+                                {isScanning
+                                    ? 'Escaneando rede local...'
+                                    : availableDevices.length > 0
+                                    ? 'Selecione um dispositivo:'
+                                    : 'Puxe para baixo para escanear'}
+                            </Text>
+                        </View>
 
-                                    {/* Ícones médicos flutuantes */}
-                                    <PulseAnimation duration={2500}>
-                                        <View className="absolute -top-2 -right-8">
-                                            <View className="w-8 h-8 bg-green-400 rounded-full items-center justify-center">
-                                                <Ionicons name="pulse" size={16} color="white" />
-                                            </View>
-                                        </View>
-                                    </PulseAnimation>
-
-                                    <PulseAnimation duration={2000}>
-                                        <View className="absolute -bottom-2 -left-8">
-                                            <View className="w-8 h-8 bg-red-400 rounded-full items-center justify-center">
-                                                <Ionicons name="heart" size={16} color="white" />
-                                            </View>
-                                        </View>
-                                    </PulseAnimation>
-                                </View>
-
-                                <Text className="text-white text-3xl font-bold mb-2">Seizure Detector</Text>
-                                <Text className="text-white/80 text-lg text-center">
-                                    Sistema de Monitoramento Neurológico
-                                </Text>
-                                <Text className="text-white/60 text-sm text-center mt-2">Acesso Profissional</Text>
+                        {/* Brain Wave Animation Container */}
+                        <View className="relative items-center justify-center mb-8">
+                            {/* Ondas de fundo */}
+                            <View className="absolute">
+                                <BrainWaveAnimation
+                                    isActive={showWaves && (isScanning || isConnecting || isConnected)}
+                                    size={280}
+                                />
                             </View>
 
-                            {/* Demo Credentials Info */}
-                            <TouchableOpacity
-                                onPress={fillDemoCredentials}
-                                className="bg-white/10 rounded-lg p-3 mb-6 border border-white/20"
-                            >
-                                <View className="flex-row items-center justify-between">
-                                    <View className="flex-1">
-                                        <Text className="text-white text-sm font-medium">
-                                            💡 Credenciais de Demonstração
-                                        </Text>
-                                        <Text className="text-white/70 text-xs mt-1">
-                                            Toque aqui para preencher automaticamente
-                                        </Text>
-                                    </View>
-                                    <Ionicons name="arrow-forward" size={16} color="white" />
+                            {/* Imagem do cérebro */}
+                            <View className="relative">
+                                <View
+                                    className="rounded-full items-center justify-center"
+                                    style={{
+                                        width: 200,
+                                        height: 200,
+                                        backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                                        borderWidth: 2,
+                                        borderColor: getStatusColor(),
+                                    }}
+                                >
+                                    <Image
+                                        source={require('@/assets/images/brain-wave.png')}
+                                        style={{
+                                            width: 160,
+                                            height: 160,
+                                            resizeMode: 'contain',
+                                            tintColor: getStatusColor(),
+                                        }}
+                                    />
                                 </View>
-                            </TouchableOpacity>
 
-                            {/* Formulário de Login */}
-                            <View className="space-y-4 mb-6">
-                                {/* Campo Email */}
-                                <View>
-                                    <Text className="text-white text-sm font-medium mb-2">Email Profissional</Text>
-                                    <View className="bg-white/10 rounded-xl border border-white/20">
-                                        <View className="flex-row items-center px-4 py-4">
-                                            <Ionicons name="mail" size={20} color="white" />
-                                            <TextInput
-                                                className="flex-1 text-white text-base ml-3"
-                                                placeholder="seu@email.com"
-                                                placeholderTextColor="rgba(255,255,255,0.5)"
-                                                value={email}
-                                                onChangeText={setEmail}
-                                                keyboardType="email-address"
-                                                autoCapitalize="none"
-                                                autoCorrect={false}
-                                            />
+                                {/* Indicador de status */}
+                                <View
+                                    className="absolute -top-2 -right-2 rounded-full border-4 border-gray-800"
+                                    style={{
+                                        width: 32,
+                                        height: 32,
+                                        backgroundColor: getStatusColor(),
+                                    }}
+                                >
+                                    {(isConnecting || isScanning) && (
+                                        <View className="flex-1 justify-center items-center">
+                                            <ActivityIndicator size="small" color="white" />
                                         </View>
-                                    </View>
-                                </View>
-
-                                {/* Campo Senha */}
-                                <View>
-                                    <Text className="text-white text-sm font-medium mb-2">Senha</Text>
-                                    <View className="bg-white/10 rounded-xl border border-white/20">
-                                        <View className="flex-row items-center px-4 py-4">
-                                            <Ionicons name="lock-closed" size={20} color="white" />
-                                            <TextInput
-                                                className="flex-1 text-white text-base ml-3"
-                                                placeholder="••••••••"
-                                                placeholderTextColor="rgba(255,255,255,0.5)"
-                                                value={password}
-                                                onChangeText={setPassword}
-                                                secureTextEntry={!showPassword}
-                                                autoCapitalize="none"
-                                                autoCorrect={false}
-                                            />
-                                            <TouchableOpacity
-                                                onPress={() => setShowPassword(!showPassword)}
-                                                className="p-1"
-                                            >
-                                                <Ionicons
-                                                    name={showPassword ? 'eye-off' : 'eye'}
-                                                    size={20}
-                                                    color="rgba(255,255,255,0.7)"
-                                                />
-                                            </TouchableOpacity>
+                                    )}
+                                    {isConnected && (
+                                        <View className="flex-1 justify-center items-center">
+                                            <Ionicons name="checkmark" size={16} color="white" />
                                         </View>
-                                    </View>
-                                </View>
-                            </View>
-
-                            {/* Botão Esqueci a Senha */}
-                            <TouchableOpacity onPress={handleForgotPassword} className="mb-6">
-                                <Text className="text-white/80 text-sm text-center">Esqueceu sua senha?</Text>
-                            </TouchableOpacity>
-
-                            {/* Botão de Login */}
-                            <TouchableOpacity
-                                className={`rounded-xl py-4 px-6 ${isLoginLoading ? 'bg-gray-500' : 'bg-white'}`}
-                                onPress={handleLogin}
-                                disabled={isLoginLoading}
-                            >
-                                {isLoginLoading ? (
-                                    <View className="flex-row justify-center items-center">
-                                        <ActivityIndicator color="#3b82f6" size="small" />
-                                        <Text className="text-blue-600 text-lg font-bold ml-2">Entrando...</Text>
-                                    </View>
-                                ) : (
-                                    <Text className="text-blue-600 text-lg font-bold text-center">Entrar</Text>
-                                )}
-                            </TouchableOpacity>
-
-                            {/* Divisor */}
-                            <View className="flex-row items-center my-8">
-                                <View className="flex-1 h-px bg-white/20" />
-                                <Text className="text-white/60 text-sm mx-4">ou</Text>
-                                <View className="flex-1 h-px bg-white/20" />
-                            </View>
-
-                            {/* Botão de Cadastro */}
-                            <TouchableOpacity
-                                onPress={handleSignUp}
-                                className="border border-white/30 rounded-xl py-4 px-6"
-                            >
-                                <Text className="text-white text-lg font-medium text-center">
-                                    Não tem uma conta? Cadastre-se
-                                </Text>
-                            </TouchableOpacity>
-
-                            {/* Footer */}
-                            <View className="mt-2 items-center">
-                                <View className="flex-row items-center space-x-4">
-                                    <View className="w-6 h-6 bg-white/20 rounded-full items-center justify-center">
-                                        <Ionicons name="shield-checkmark" size={12} color="white" />
-                                    </View>
-                                    <Text className="text-white/60 text-xs">Dados protegidos por criptografia</Text>
+                                    )}
                                 </View>
                             </View>
                         </View>
-                    </ScrollView>
-                </KeyboardAvoidingView>
+
+                        {/* Status atual */}
+                        <View className="items-center mb-6">
+                            <Text className="text-xl font-semibold mb-1" style={{ color: getStatusColor() }}>
+                                {getStatusText()}
+                            </Text>
+                            {connectionError && (
+                                <Text className="text-red-400 text-sm text-center">{connectionError}</Text>
+                            )}
+                        </View>
+
+                        {/* Lista de dispositivos */}
+                        {renderDeviceList()}
+
+                        {/* Device Info - apenas se um dispositivo estiver selecionado */}
+                        {selectedDevice && (
+                            <View className="bg-gray-800/50 rounded-2xl p-6 mb-8 w-full max-w-sm">
+                                <View className="items-center mb-4">
+                                    <Text className="text-white text-xl font-semibold mb-1">{selectedDevice.nome}</Text>
+                                    <Text className="text-sm font-medium" style={{ color: getStatusColor() }}>
+                                        {selectedDevice.device}
+                                    </Text>
+                                </View>
+
+                                <View className="space-y-3">
+                                    <View className="flex-row justify-between items-center">
+                                        <Text className="text-gray-300">Endereço IP:</Text>
+                                        <Text className="text-white font-medium">{selectedDevice.ip}</Text>
+                                    </View>
+
+                                    <View className="flex-row justify-between items-center">
+                                        <Text className="text-gray-300">Porta:</Text>
+                                        <Text className="text-white font-medium">{selectedDevice.port}</Text>
+                                    </View>
+
+                                    <View className="flex-row justify-between items-center">
+                                        <Text className="text-gray-300">Versão:</Text>
+                                        <Text className="text-white font-medium">v{selectedDevice.versao}</Text>
+                                    </View>
+
+                                    <View className="flex-row justify-between items-center">
+                                        <Text className="text-gray-300">Status:</Text>
+                                        <View className="flex-row items-center">
+                                            <View
+                                                className="w-2 h-2 rounded-full mr-2"
+                                                style={{
+                                                    backgroundColor: selectedDevice.online ? '#10b981' : '#ef4444',
+                                                }}
+                                            />
+                                            <Text className="text-white font-medium">
+                                                {selectedDevice.online ? 'Online' : 'Offline'}
+                                            </Text>
+                                        </View>
+                                    </View>
+                                </View>
+                            </View>
+                        )}
+
+                        {/* Action Buttons */}
+                        <View className="w-full max-w-sm space-y-3">
+                            {!isConnected && (
+                                <>
+                                    <TouchableOpacity
+                                        className={`w-full rounded-full py-4 px-8 mb-3 ${
+                                            isConnecting
+                                                ? 'bg-gray-600'
+                                                : selectedDevice
+                                                ? 'bg-blue-600'
+                                                : 'bg-gray-600'
+                                        }`}
+                                        onPress={handleConnect}
+                                        disabled={isConnecting || !selectedDevice}
+                                    >
+                                        {isConnecting ? (
+                                            <View className="flex-row justify-center items-center">
+                                                <ActivityIndicator color="white" size="small" />
+                                                <Text className="text-white text-lg font-bold ml-2">Conectando...</Text>
+                                            </View>
+                                        ) : (
+                                            <Text className="text-white text-lg font-bold text-center">
+                                                {selectedDevice
+                                                    ? 'Conectar ao Dispositivo'
+                                                    : 'Nenhum dispositivo selecionado'}
+                                            </Text>
+                                        )}
+                                    </TouchableOpacity>
+
+                                    <TouchableOpacity
+                                        className={`w-full rounded-full py-3 px-8 border-2 border-blue-500 ${
+                                            isScanning ? 'bg-blue-500/20' : 'bg-transparent'
+                                        }`}
+                                        onPress={handleScan}
+                                        disabled={isScanning}
+                                    >
+                                        {isScanning ? (
+                                            <View className="flex-row justify-center items-center">
+                                                <ActivityIndicator color="#3b82f6" size="small" />
+                                                <Text className="text-blue-400 text-base font-medium ml-2">
+                                                    Escaneando...
+                                                </Text>
+                                            </View>
+                                        ) : (
+                                            <Text className="text-blue-400 text-base font-medium text-center">
+                                                🔍 Escanear Novamente
+                                            </Text>
+                                        )}
+                                    </TouchableOpacity>
+                                </>
+                            )}
+
+                            {isConnected && (
+                                <View className="items-center">
+                                    <View className="bg-green-600 rounded-full py-4 px-8 mb-4">
+                                        <Text className="text-white text-lg font-bold">✓ Conectado com Sucesso</Text>
+                                    </View>
+                                    <Text className="text-gray-300 text-center">Redirecionando para o painel...</Text>
+                                    <Text className="text-gray-400 text-sm text-center mt-2">
+                                        Conectado a: {selectedESP32Device?.ip}
+                                    </Text>
+                                </View>
+                            )}
+                        </View>
+                    </View>
+                </ScrollView>
             </LinearGradient>
         </View>
     );

@@ -1,21 +1,15 @@
 import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, ScrollView, Switch, Alert, Modal, TextInput } from 'react-native';
+import { View, Text, TouchableOpacity, ScrollView, Alert } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import {
-    DEFAULT_USER,
-    mockEmergencyContacts,
-    mockUserSettings,
-    EmergencyContact,
-    UserSettings,
-} from '../../data/mockData';
+import { LinearGradient } from 'expo-linear-gradient';
+import { mockEmergencyContacts, EmergencyContact } from '../../data/mockData';
 import ContactModal from '../../components/ui/ContactModal';
 
 interface SettingsTabProps {
-    onLogout: () => void;
+    onDisconnect: () => void;
 }
 
-export default function SettingsTab({ onLogout }: SettingsTabProps) {
-    const [settings, setSettings] = useState<UserSettings>(mockUserSettings);
+export default function SettingsTab({ onDisconnect }: SettingsTabProps) {
     const [emergencyContacts, setEmergencyContacts] = useState<EmergencyContact[]>(mockEmergencyContacts);
     const [contactModalVisible, setContactModalVisible] = useState(false);
     const [editingContact, setEditingContact] = useState<EmergencyContact | null>(null);
@@ -24,20 +18,6 @@ export default function SettingsTab({ onLogout }: SettingsTabProps) {
         phone: '',
         relationship: '',
     });
-
-    const updateSetting = (category: keyof UserSettings, setting: string, value: boolean) => {
-        setSettings((prev) => ({
-            ...prev,
-            [category]: {
-                ...prev[category],
-                [setting]: value,
-            },
-        }));
-    };
-
-    const handleChangePassword = () => {
-        Alert.alert('Alterar Senha', 'Esta funcionalidade estará disponível em breve.', [{ text: 'OK' }]);
-    };
 
     const handleAddContact = () => {
         setEditingContact(null);
@@ -102,262 +82,171 @@ export default function SettingsTab({ onLogout }: SettingsTabProps) {
         );
     };
 
-    const renderAccountSection = () => (
-        <View className="bg-white rounded-xl p-6 mb-6 shadow-sm">
-            <Text className="text-lg font-bold text-gray-800 mb-4">Informações da Conta</Text>
-
-            <View className="space-y-4">
-                <View className="flex-row items-center">
-                    <View className="w-12 h-12 rounded-full bg-blue-100 items-center justify-center mr-4">
-                        <Ionicons name="person" size={24} color="#3b82f6" />
-                    </View>
-                    <View className="flex-1">
-                        <Text className="text-gray-800 font-semibold">{DEFAULT_USER.name}</Text>
-                        <Text className="text-gray-500 text-sm">{DEFAULT_USER.email}</Text>
-                    </View>
-                    <TouchableOpacity>
-                        <Ionicons name="create-outline" size={20} color="#6b7280" />
-                    </TouchableOpacity>
-                </View>
-
-                <View className="border-t border-gray-200 pt-4">
-                    <TouchableOpacity
-                        onPress={handleChangePassword}
-                        className="flex-row items-center justify-between py-3"
-                    >
-                        <View className="flex-row items-center">
-                            <Ionicons name="lock-closed" size={20} color="#6b7280" />
-                            <Text className="text-gray-700 ml-3">Alterar senha</Text>
-                        </View>
-                        <Ionicons name="chevron-forward" size={16} color="#6b7280" />
-                    </TouchableOpacity>
-                </View>
-            </View>
-        </View>
-    );
+    const handleAbout = () => {
+        Alert.alert(
+            'Sobre o Seizure Detector',
+            'Aplicativo desenvolvido para monitoramento de crises epilépticas.\n\nVersão: 1.0.0\nDesenvolvido para fins acadêmicos.',
+            [{ text: 'OK' }],
+        );
+    };
 
     const renderEmergencyContactsSection = () => (
-        <View className="bg-white rounded-xl p-6 mb-6 shadow-sm">
-            <View className="flex-row items-center justify-between mb-4">
-                <Text className="text-lg font-bold text-gray-800">Contatos de Emergência</Text>
-                <TouchableOpacity
-                    onPress={handleAddContact}
-                    className="w-8 h-8 rounded-full bg-blue-100 items-center justify-center"
-                >
-                    <Ionicons name="add" size={20} color="#3b82f6" />
-                </TouchableOpacity>
+        <View className="mb-8">
+            {/* Título da Seção */}
+            <View className="flex-row items-center mb-4">
+                <View className="w-8 h-8 bg-red-100 rounded-full items-center justify-center mr-3">
+                    <Ionicons name="call" size={16} color="#ef4444" />
+                </View>
+                <Text className="text-2xl font-bold text-gray-800">Contatos de Emergência</Text>
             </View>
 
-            <View className="space-y-3">
-                {emergencyContacts.map((contact) => (
-                    <View key={contact.id} className="border border-gray-200 rounded-lg p-4">
-                        <View className="flex-row items-center justify-between mb-2">
-                            <View className="flex-row items-center flex-1">
-                                <View className="w-10 h-10 rounded-full bg-red-100 items-center justify-center mr-3">
-                                    <Ionicons name="call" size={18} color="#ef4444" />
-                                </View>
-                                <View className="flex-1">
-                                    <View className="flex-row items-center">
-                                        <Text className="text-gray-800 font-semibold">{contact.name}</Text>
-                                        {contact.isPrimary && (
-                                            <View className="ml-2 px-2 py-1 bg-blue-100 rounded-full">
-                                                <Text className="text-blue-600 text-xs font-medium">Principal</Text>
-                                            </View>
-                                        )}
+            {/* Card com View Branca */}
+            <View className="bg-white rounded-2xl p-6 shadow-sm">
+                <View className="flex-row items-center justify-between mb-6">
+                    <Text className="text-lg font-bold text-gray-800">Gerenciar Contatos</Text>
+                    <TouchableOpacity
+                        onPress={handleAddContact}
+                        className="w-10 h-10 rounded-full bg-red-100 items-center justify-center"
+                    >
+                        <Ionicons name="add" size={20} color="#ef4444" />
+                    </TouchableOpacity>
+                </View>
+
+                <View className="mb-4">
+                    {emergencyContacts.map((contact, index) => (
+                        <View
+                            key={contact.id}
+                            className={`border border-gray-200 rounded-lg p-4 ${index > 0 ? 'mt-3' : ''}`}
+                        >
+                            <View className="flex-row items-center justify-between mb-2">
+                                <View className="flex-row items-center flex-1">
+                                    <View className="w-10 h-10 rounded-full bg-red-100 items-center justify-center mr-3">
+                                        <Ionicons name="person" size={18} color="#ef4444" />
                                     </View>
-                                    <Text className="text-gray-500 text-sm">{contact.phone}</Text>
-                                    <Text className="text-gray-400 text-xs">{contact.relationship}</Text>
+                                    <View className="flex-1">
+                                        <View className="flex-row items-center">
+                                            <Text className="text-gray-800 font-semibold">{contact.name}</Text>
+                                            {contact.isPrimary && (
+                                                <View className="ml-2 px-2 py-1 bg-red-100 rounded-full">
+                                                    <Text className="text-red-600 text-xs font-medium">Principal</Text>
+                                                </View>
+                                            )}
+                                        </View>
+                                        <Text className="text-gray-500 text-sm">{contact.phone}</Text>
+                                        <Text className="text-gray-400 text-xs">{contact.relationship}</Text>
+                                    </View>
+                                </View>
+
+                                <View className="flex-row">
+                                    <TouchableOpacity onPress={() => handleEditContact(contact)} className="p-2">
+                                        <Ionicons name="create-outline" size={16} color="#6b7280" />
+                                    </TouchableOpacity>
+                                    <TouchableOpacity onPress={() => handleDeleteContact(contact.id)} className="p-2">
+                                        <Ionicons name="trash-outline" size={16} color="#ef4444" />
+                                    </TouchableOpacity>
                                 </View>
                             </View>
 
-                            <View className="flex-row">
-                                <TouchableOpacity onPress={() => handleEditContact(contact)} className="p-2">
-                                    <Ionicons name="create-outline" size={16} color="#6b7280" />
+                            {!contact.isPrimary && (
+                                <TouchableOpacity
+                                    onPress={() => togglePrimaryContact(contact.id)}
+                                    className="mt-2 px-3 py-1 bg-gray-100 rounded-md self-start"
+                                >
+                                    <Text className="text-gray-600 text-xs">Definir como principal</Text>
                                 </TouchableOpacity>
-                                <TouchableOpacity onPress={() => handleDeleteContact(contact.id)} className="p-2">
-                                    <Ionicons name="trash-outline" size={16} color="#ef4444" />
-                                </TouchableOpacity>
+                            )}
+                        </View>
+                    ))}
+
+                    {emergencyContacts.length === 0 && (
+                        <View className="items-center py-8">
+                            <View className="w-16 h-16 bg-gray-100 rounded-full items-center justify-center mb-4">
+                                <Ionicons name="person-add" size={32} color="#6b7280" />
                             </View>
+                            <Text className="text-gray-500 text-center">
+                                Nenhum contato de emergência configurado.{'\n'}Toque no + para adicionar um contato.
+                            </Text>
                         </View>
-
-                        {!contact.isPrimary && (
-                            <TouchableOpacity
-                                onPress={() => togglePrimaryContact(contact.id)}
-                                className="mt-2 px-3 py-1 bg-gray-100 rounded-md self-start"
-                            >
-                                <Text className="text-gray-600 text-xs">Definir como principal</Text>
-                            </TouchableOpacity>
-                        )}
-                    </View>
-                ))}
-            </View>
-        </View>
-    );
-
-    const renderNotificationsSection = () => (
-        <View className="bg-white rounded-xl p-6 mb-6 shadow-sm">
-            <Text className="text-lg font-bold text-gray-800 mb-4">Notificações</Text>
-
-            <View className="space-y-4">
-                <View className="flex-row items-center justify-between">
-                    <View className="flex-row items-center flex-1">
-                        <Ionicons name="notifications" size={20} color="#6b7280" />
-                        <View className="ml-3">
-                            <Text className="text-gray-700 font-medium">Push Notifications</Text>
-                            <Text className="text-gray-500 text-sm">Receber notificações no dispositivo</Text>
-                        </View>
-                    </View>
-                    <Switch
-                        value={settings.notifications.pushEnabled}
-                        onValueChange={(value) => updateSetting('notifications', 'pushEnabled', value)}
-                        trackColor={{ false: '#d1d5db', true: '#93c5fd' }}
-                        thumbColor={settings.notifications.pushEnabled ? '#3b82f6' : '#9ca3af'}
-                    />
-                </View>
-
-                <View className="flex-row items-center justify-between">
-                    <View className="flex-row items-center flex-1">
-                        <Ionicons name="mail" size={20} color="#6b7280" />
-                        <View className="ml-3">
-                            <Text className="text-gray-700 font-medium">Email</Text>
-                            <Text className="text-gray-500 text-sm">Receber notificações por email</Text>
-                        </View>
-                    </View>
-                    <Switch
-                        value={settings.notifications.emailEnabled}
-                        onValueChange={(value) => updateSetting('notifications', 'emailEnabled', value)}
-                        trackColor={{ false: '#d1d5db', true: '#93c5fd' }}
-                        thumbColor={settings.notifications.emailEnabled ? '#3b82f6' : '#9ca3af'}
-                    />
-                </View>
-
-                <View className="flex-row items-center justify-between">
-                    <View className="flex-row items-center flex-1">
-                        <Ionicons name="chatbubble" size={20} color="#6b7280" />
-                        <View className="ml-3">
-                            <Text className="text-gray-700 font-medium">SMS</Text>
-                            <Text className="text-gray-500 text-sm">Receber notificações por SMS</Text>
-                        </View>
-                    </View>
-                    <Switch
-                        value={settings.notifications.smsEnabled}
-                        onValueChange={(value) => updateSetting('notifications', 'smsEnabled', value)}
-                        trackColor={{ false: '#d1d5db', true: '#93c5fd' }}
-                        thumbColor={settings.notifications.smsEnabled ? '#3b82f6' : '#9ca3af'}
-                    />
-                </View>
-
-                <View className="flex-row items-center justify-between">
-                    <View className="flex-row items-center flex-1">
-                        <Ionicons name="warning" size={20} color="#ef4444" />
-                        <View className="ml-3">
-                            <Text className="text-gray-700 font-medium">Alertas de Emergência</Text>
-                            <Text className="text-gray-500 text-sm">Notificações críticas sempre ativas</Text>
-                        </View>
-                    </View>
-                    <Switch
-                        value={settings.notifications.emergencyAlerts}
-                        onValueChange={(value) => updateSetting('notifications', 'emergencyAlerts', value)}
-                        trackColor={{ false: '#d1d5db', true: '#fca5a5' }}
-                        thumbColor={settings.notifications.emergencyAlerts ? '#ef4444' : '#9ca3af'}
-                    />
+                    )}
                 </View>
             </View>
         </View>
     );
 
-    const renderDeviceSection = () => (
-        <View className="bg-white rounded-xl p-6 mb-6 shadow-sm">
-            <Text className="text-lg font-bold text-gray-800 mb-4">Configurações do Dispositivo</Text>
-
-            <View className="space-y-4">
-                <View className="flex-row items-center justify-between">
-                    <View className="flex-row items-center flex-1">
-                        <Ionicons name="sync" size={20} color="#6b7280" />
-                        <View className="ml-3">
-                            <Text className="text-gray-700 font-medium">Sincronização Automática</Text>
-                            <Text className="text-gray-500 text-sm">Sincronizar dados automaticamente</Text>
-                        </View>
-                    </View>
-                    <Switch
-                        value={settings.device.autoSync}
-                        onValueChange={(value) => updateSetting('device', 'autoSync', value)}
-                        trackColor={{ false: '#d1d5db', true: '#93c5fd' }}
-                        thumbColor={settings.device.autoSync ? '#3b82f6' : '#9ca3af'}
-                    />
+    const renderDeviceInfoSection = () => (
+        <View className="mb-8">
+            {/* Título da Seção */}
+            <View className="flex-row items-center mb-4">
+                <View className="w-8 h-8 bg-blue-100 rounded-full items-center justify-center mr-3">
+                    <Ionicons name="hardware-chip" size={16} color="#3b82f6" />
                 </View>
+                <Text className="text-2xl font-bold text-gray-800">Informações do Dispositivo</Text>
+            </View>
 
-                <View className="flex-row items-center justify-between">
-                    <View className="flex-row items-center flex-1">
-                        <Ionicons name="battery-charging" size={20} color="#6b7280" />
-                        <View className="ml-3">
-                            <Text className="text-gray-700 font-medium">Alertas de Bateria</Text>
-                            <Text className="text-gray-500 text-sm">Notificar quando bateria estiver baixa</Text>
+            {/* Card com View Branca */}
+            <View className="bg-white rounded-2xl p-6 shadow-sm">
+                <View className="mb-4">
+                    <View className="flex-row items-center mb-4">
+                        <View className="w-12 h-12 bg-blue-100 rounded-full items-center justify-center mr-4">
+                            <Ionicons name="hardware-chip" size={24} color="#3b82f6" />
+                        </View>
+                        <View className="flex-1">
+                            <Text className="text-gray-800 font-semibold text-lg">ESP32 Seizure Detector</Text>
+                            <Text className="text-gray-500 text-sm">Dispositivo de monitoramento</Text>
                         </View>
                     </View>
-                    <Switch
-                        value={settings.device.batteryAlerts}
-                        onValueChange={(value) => updateSetting('device', 'batteryAlerts', value)}
-                        trackColor={{ false: '#d1d5db', true: '#93c5fd' }}
-                        thumbColor={settings.device.batteryAlerts ? '#3b82f6' : '#9ca3af'}
-                    />
-                </View>
 
-                <View className="flex-row items-center justify-between">
-                    <View className="flex-row items-center flex-1">
-                        <Ionicons name="wifi" size={20} color="#6b7280" />
-                        <View className="ml-3">
-                            <Text className="text-gray-700 font-medium">Alertas de Conexão</Text>
-                            <Text className="text-gray-500 text-sm">Notificar problemas de conexão</Text>
+                    <View className="border-t border-gray-200 pt-4">
+                        <View className="flex-row justify-between items-center mb-2">
+                            <Text className="text-gray-600">Modelo:</Text>
+                            <Text className="text-gray-800 font-medium">ESP32-WROOM-32</Text>
+                        </View>
+                        <View className="flex-row justify-between items-center mb-2">
+                            <Text className="text-gray-600">Firmware:</Text>
+                            <Text className="text-gray-800 font-medium">v2.1.0</Text>
+                        </View>
+                        <View className="flex-row justify-between items-center">
+                            <Text className="text-gray-600">Protocolo:</Text>
+                            <Text className="text-gray-800 font-medium">WiFi + HTTP</Text>
                         </View>
                     </View>
-                    <Switch
-                        value={settings.device.connectionAlerts}
-                        onValueChange={(value) => updateSetting('device', 'connectionAlerts', value)}
-                        trackColor={{ false: '#d1d5db', true: '#93c5fd' }}
-                        thumbColor={settings.device.connectionAlerts ? '#3b82f6' : '#9ca3af'}
-                    />
                 </View>
             </View>
         </View>
     );
 
     const renderActionsSection = () => (
-        <View className="bg-white rounded-xl p-6 mb-6 shadow-sm">
-            <Text className="text-lg font-bold text-gray-800 mb-4">Ações</Text>
+        <View className="mb-6">
+            {/* Título da Seção */}
+            <View className="flex-row items-center mb-4">
+                <View className="w-8 h-8 bg-gray-100 rounded-full items-center justify-center mr-3">
+                    <Ionicons name="settings" size={16} color="#6b7280" />
+                </View>
+                <Text className="text-2xl font-bold text-gray-800">Configurações</Text>
+            </View>
 
-            <View className="space-y-3">
-                <TouchableOpacity className="flex-row items-center justify-between py-3 border-b border-gray-100">
-                    <View className="flex-row items-center">
-                        <Ionicons name="help-circle" size={20} color="#6b7280" />
-                        <Text className="text-gray-700 ml-3">Ajuda e Suporte</Text>
-                    </View>
-                    <Ionicons name="chevron-forward" size={16} color="#6b7280" />
-                </TouchableOpacity>
+            {/* Card com View Branca */}
+            <View className="bg-white rounded-2xl p-6 shadow-sm">
+                <View className="mb-4">
+                    <TouchableOpacity
+                        onPress={handleAbout}
+                        className="flex-row items-center justify-between py-4 border-b border-gray-100"
+                    >
+                        <View className="flex-row items-center">
+                            <Ionicons name="information-circle" size={20} color="#6b7280" />
+                            <Text className="text-gray-700 ml-3">Sobre o Aplicativo</Text>
+                        </View>
+                        <Ionicons name="chevron-forward" size={16} color="#6b7280" />
+                    </TouchableOpacity>
 
-                <TouchableOpacity className="flex-row items-center justify-between py-3 border-b border-gray-100">
-                    <View className="flex-row items-center">
-                        <Ionicons name="document-text" size={20} color="#6b7280" />
-                        <Text className="text-gray-700 ml-3">Termos de Uso</Text>
-                    </View>
-                    <Ionicons name="chevron-forward" size={16} color="#6b7280" />
-                </TouchableOpacity>
-
-                <TouchableOpacity className="flex-row items-center justify-between py-3 border-b border-gray-100">
-                    <View className="flex-row items-center">
-                        <Ionicons name="shield-checkmark" size={20} color="#6b7280" />
-                        <Text className="text-gray-700 ml-3">Política de Privacidade</Text>
-                    </View>
-                    <Ionicons name="chevron-forward" size={16} color="#6b7280" />
-                </TouchableOpacity>
-
-                <TouchableOpacity onPress={onLogout} className="flex-row items-center justify-between py-3">
-                    <View className="flex-row items-center">
-                        <Ionicons name="log-out" size={20} color="#ef4444" />
-                        <Text className="text-red-600 ml-3 font-medium">Sair da Conta</Text>
-                    </View>
-                    <Ionicons name="chevron-forward" size={16} color="#ef4444" />
-                </TouchableOpacity>
+                    <TouchableOpacity onPress={onDisconnect} className="flex-row items-center justify-between py-4">
+                        <View className="flex-row items-center">
+                            <Ionicons name="power" size={20} color="#ef4444" />
+                            <Text className="text-red-600 ml-3 font-medium">Desconectar Dispositivo</Text>
+                        </View>
+                        <Ionicons name="chevron-forward" size={16} color="#ef4444" />
+                    </TouchableOpacity>
+                </View>
             </View>
         </View>
     );
@@ -365,16 +254,20 @@ export default function SettingsTab({ onLogout }: SettingsTabProps) {
     return (
         <View className="flex-1 bg-gray-50">
             {/* Header */}
-            <View className="bg-blue-600 pt-12 pb-6 px-6">
+            <LinearGradient
+                colors={['#2563eb', '#1d4ed8']}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
+                className="pt-16 pb-8 px-6"
+            >
                 <Text className="text-white text-2xl font-bold">Configurações</Text>
-                <Text className="text-white/80 text-sm mt-1">Gerencie suas preferências e conta</Text>
-            </View>
+                <Text className="text-white/80 text-sm mt-1">Gerencie contatos e preferências</Text>
+            </LinearGradient>
 
+            {/* Content */}
             <ScrollView className="flex-1 px-6 py-6">
-                {renderAccountSection()}
                 {renderEmergencyContactsSection()}
-                {renderNotificationsSection()}
-                {renderDeviceSection()}
+                {renderDeviceInfoSection()}
                 {renderActionsSection()}
             </ScrollView>
 

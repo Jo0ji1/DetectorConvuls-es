@@ -1,34 +1,9 @@
-export interface DeviceData {
-    id: string;
-    name: string;
-    status: 'active' | 'inactive' | 'connecting' | 'connected';
-    batteryLevel: number;
-    signalStrength: number;
-    lastActivity: string;
-    operationTime: number; // em horas
-}
-
 export interface SeizureEvent {
     id: string;
     timestamp: string;
     duration: number; // em segundos
     severity: 'low' | 'medium' | 'high';
     brainWaveData: number[];
-}
-
-export interface PatientData {
-    id: string;
-    name: string;
-    age: number;
-    emergencyContact: {
-        name: string;
-        phone: string;
-    };
-}
-
-export interface LoginCredentials {
-    email: string;
-    password: string;
 }
 
 export interface SleepQualityEvent {
@@ -56,42 +31,9 @@ export interface EmergencyContact {
     isPrimary: boolean;
 }
 
-export interface UserSettings {
-    notifications: {
-        pushEnabled: boolean;
-        emailEnabled: boolean;
-        smsEnabled: boolean;
-        emergencyAlerts: boolean;
-    };
-    privacy: {
-        shareData: boolean;
-        analytics: boolean;
-    };
-    device: {
-        autoSync: boolean;
-        batteryAlerts: boolean;
-        connectionAlerts: boolean;
-    };
-}
-
 // ===== DADOS CENTRALIZADOS =====
 
-// Dados do usuário centralizados
-export const DEFAULT_USER = {
-    id: '001',
-    email: 'usuario@seizuredetector.com',
-    name: 'João Silva',
-    role: 'Usuário',
-    age: 28,
-};
-
-// Credenciais de login padrão
-export const DEFAULT_CREDENTIALS: LoginCredentials = {
-    email: 'usuario@seizuredetector.com',
-    password: '123456',
-};
-
-// Contatos de emergência centralizados (fonte única da verdade)
+// Contatos de emergência
 export const mockEmergencyContacts: EmergencyContact[] = [
     {
         id: 'EC001',
@@ -116,37 +58,7 @@ export const mockEmergencyContacts: EmergencyContact[] = [
     },
 ];
 
-// Dados do dispositivo centralizados
-export const mockDevice: DeviceData = {
-    id: 'SD_001',
-    name: 'Seizure Detector v2.1',
-    status: 'active',
-    batteryLevel: 87,
-    signalStrength: 95,
-    lastActivity: '2024-01-15T10:30:00Z',
-    operationTime: 23.5,
-};
-
-// Configurações do usuário
-export const mockUserSettings: UserSettings = {
-    notifications: {
-        pushEnabled: true,
-        emailEnabled: true,
-        smsEnabled: false,
-        emergencyAlerts: true,
-    },
-    privacy: {
-        shareData: false,
-        analytics: true,
-    },
-    device: {
-        autoSync: true,
-        batteryAlerts: true,
-        connectionAlerts: true,
-    },
-};
-
-// Eventos de crise fictícios
+// Eventos de crise fictícios (apenas para o histórico)
 export const mockSeizureEvents: SeizureEvent[] = [
     {
         id: 'SE001',
@@ -273,28 +185,6 @@ export const mockHistoryStats: HistoryStats = {
     lastWeekTrend: 'improving',
 };
 
-// ===== DADOS DERIVADOS (usando as fontes centralizadas) =====
-
-// Dados do paciente usando referências centralizadas
-export const mockPatient: PatientData = {
-    id: 'P001',
-    name: DEFAULT_USER.name,
-    age: DEFAULT_USER.age,
-    emergencyContact: {
-        name: mockEmergencyContacts.find((contact) => contact.isPrimary)?.name || 'Não configurado',
-        phone: mockEmergencyContacts.find((contact) => contact.isPrimary)?.phone || 'Não configurado',
-    },
-};
-
-// Dados simplificados para Home (usando fontes centralizadas)
-export const mockHomeData = {
-    deviceStats: {
-        totalDetections: mockSeizureEvents.length,
-        lastSyncTime: mockDevice.lastActivity,
-        uptime: '98.5%',
-    },
-};
-
 // ===== FUNÇÕES UTILITÁRIAS =====
 
 // Obter contato primário de emergência
@@ -323,20 +213,6 @@ export const getEmergencyContactsForDisplay = () => {
             relationship: 'Emergência',
         },
     ];
-};
-
-// Função para simular mudança de status do dispositivo
-export const updateDeviceStatus = (newStatus: DeviceData['status']): DeviceData => {
-    return {
-        ...mockDevice,
-        status: newStatus,
-        lastActivity: new Date().toISOString(),
-    };
-};
-
-// Função para validar credenciais de login
-export const validateLogin = (email: string, password: string): boolean => {
-    return email === DEFAULT_CREDENTIALS.email && password === DEFAULT_CREDENTIALS.password;
 };
 
 // Funções utilitárias para histórico
