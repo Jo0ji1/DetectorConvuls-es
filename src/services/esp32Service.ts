@@ -34,7 +34,8 @@ class ESP32Service {
         '192.168.0.',
         '10.0.0.',
         '172.16.0.',
-        '/172.16.60.48'
+        '172.16.60.48',
+        '172.16.60.111'
     ];
 
     // Descobrir dispositivos na rede local
