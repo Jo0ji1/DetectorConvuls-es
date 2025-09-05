@@ -1,20 +1,18 @@
 import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, Alert } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { useAuth } from '../../contexts/AuthContext';
-import { useDevice } from '../../contexts/DeviceContext';
+import { useDevice } from '../contexts/DeviceContext';
 import { router } from 'expo-router';
-import HomeTab from '../../components/tabs/HomeTab';
-import HistoryTab from '../../components/tabs/HistoryTab';
-import SettingsTab from '../../components/tabs/SettingsTab';
-import '../../../global.css';
+import HomeTab from '../components/tabs/HomeTab';
+import HistoryTab from '../components/tabs/HistoryTab';
+import SettingsTab from '../components/tabs/SettingsTab';
+import '@/global.css';
 
 export default function DashboardScreen() {
-    const { user, logout } = useAuth();
     const { device, disconnectDevice } = useDevice();
     const [activeTab, setActiveTab] = useState<'home' | 'history' | 'settings'>('home');
 
-    const handleLogout = async () => {
+    const handleDisconnect = async () => {
         Alert.alert('Desconectar', 'Tem certeza que deseja desconectar do dispositivo?', [
             {
                 text: 'Cancelar',
@@ -25,7 +23,6 @@ export default function DashboardScreen() {
                 style: 'destructive',
                 onPress: async () => {
                     disconnectDevice();
-                    await logout();
                     router.replace('/');
                 },
             },
@@ -35,11 +32,11 @@ export default function DashboardScreen() {
     const renderTabContent = () => {
         switch (activeTab) {
             case 'home':
-                return <HomeTab onLogout={handleLogout} />;
+                return <HomeTab onDisconnect={handleDisconnect} />;
             case 'history':
                 return <HistoryTab />;
             case 'settings':
-                return <SettingsTab onLogout={handleLogout} />;
+                return <SettingsTab onDisconnect={handleDisconnect} />;
             default:
                 return null;
         }

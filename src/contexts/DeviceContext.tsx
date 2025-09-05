@@ -1,9 +1,18 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { DeviceData, mockDevice } from '../data/mockData';
 import { esp32Service, ESP32Device, ESP32Status } from '../services/esp32Service';
 
+interface DeviceData {
+    id: string;
+    name: string;
+    status: 'active' | 'inactive' | 'connecting' | 'connected';
+    batteryLevel: number;
+    signalStrength: number;
+    lastActivity: string;
+    operationTime: number; // em horas
+}
+
 interface DeviceContextType {
-    device: DeviceData;
+    device: DeviceData | null;
     availableDevices: ESP32Device[];
     isScanning: boolean;
     isConnecting: boolean;
@@ -19,7 +28,7 @@ interface DeviceContextType {
 const DeviceContext = createContext<DeviceContextType | undefined>(undefined);
 
 export function DeviceProvider({ children }: { children: React.ReactNode }) {
-    const [device, setDevice] = useState<DeviceData>(mockDevice);
+    const [device, setDevice] = useState<DeviceData | null>(null);
     const [availableDevices, setAvailableDevices] = useState<ESP32Device[]>([]);
     const [isScanning, setIsScanning] = useState(false);
     const [isConnecting, setIsConnecting] = useState(false);
@@ -136,7 +145,7 @@ export function DeviceProvider({ children }: { children: React.ReactNode }) {
     const disconnectDevice = () => {
         setIsConnected(false);
         setSelectedESP32Device(null);
-        setDevice(mockDevice); // Voltar para dados mock
+        setDevice(null); // Limpar dados do dispositivo
         console.log('🔌 Dispositivo desconectado');
     };
 
