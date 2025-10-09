@@ -8,14 +8,14 @@
 #include <math.h>
 
 // ===== WIFI =====
-const char* WIFI_SSID = "UernNatal";
-const char* WIFI_PASS = "uern5322";
+const char* WIFI_SSID = "brisa-3320790";
+const char* WIFI_PASS = "1sjckcxx";
 
 // ===== MQTT (HiveMQ Cloud) =====
 const char* MQTT_HOST = "9a41abb938cd484e9dc8b865088f234b.s1.eu.hivemq.cloud"; // ex: xxxxx.s1.eu.hivemq.cloud
 const int   MQTT_PORT = 8883;
 const char* MQTT_USER = "device-esp32-ABC123";
-const char* MQTT_PASS = "Gc224180";
+const char* MQTT_PASS = "Esp32224180";
 const char* DEVICE_ID = "esp32-ABC123";
 
 // ===== Root CA do cluster (pública da Let's Encrypt / HiveMQ Cloud) =====
