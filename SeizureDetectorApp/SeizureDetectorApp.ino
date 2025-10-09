@@ -27,14 +27,14 @@
 #include <time.h>
 
 // =================== CONFIG GERAL ===================
-#define LED_PIN 2                         // LED onboard (DevKit v1)
+#define LED_PIN 12                         // LED onboard (DevKit v1)
 #define WIFI_CONNECT_TIMEOUT 20000        // ms
 #define MQTT_RETRY_BACKOFF_MS 2000        // backoff base em ms (usado com jitter)
 #define STATUS_PERIOD_MS 5000             // período de publish do status
 
 // =================== BUZZER =========================
 // Buzzer ATIVO (liga com HIGH). Se seu buzzer for PASSIVO, defina BUZZER_IS_PASSIVE 1.
-#define BUZZER_PIN 21
+#define BUZZER_PIN 23
 #define BUZZER_ACTIVE_HIGH 1
 #define BUZZER_IS_PASSIVE 0   // 0 = buzzer ativo; 1 = buzzer passivo (usa PWM)
 bool    buzzerEnabled = true; // pode ser alterado via MQTT
